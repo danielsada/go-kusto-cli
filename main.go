@@ -14,7 +14,11 @@ import (
 	"github.com/danielsada/go-kusto-cli/internal/input"
 )
 
+// Set via -ldflags at build time by GoReleaser.
+var version = "dev"
+
 func main() {
+	showVersion := flag.Bool("version", false, "Print version and exit")
 	cluster := flag.String("c", "", "Kusto cluster URL (e.g. https://mycluster.region.kusto.windows.net)")
 	database := flag.String("d", "", "Database name")
 	execute := flag.String("e", "", "KQL query to execute")
@@ -23,6 +27,7 @@ func main() {
 	output := flag.String("o", "", "Output file path (default: stdout)")
 
 	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "go-kusto-cli %s\n\n", version)
 		fmt.Fprintf(os.Stderr, "Usage: go-kusto-cli -c <cluster> -d <database> [-e <query> | -s <script>] [-f table|csv|json] [-o <file>]\n\n")
 		fmt.Fprintf(os.Stderr, "A CLI for querying Azure Data Explorer (Kusto) via the REST API.\n\n")
 		fmt.Fprintf(os.Stderr, "Query input (pick one, in priority order):\n")
@@ -34,6 +39,11 @@ func main() {
 	}
 
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println(version)
+		return
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
